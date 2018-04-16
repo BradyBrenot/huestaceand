@@ -5,11 +5,14 @@
 #include <algorithm>
 #include <cmath>
 
+#if WITH_HUESTACEAN_GUI
 #include <QQmlApplicationEngine>
+#include <QKeyEvent>
+#endif
+
 #include <QElapsedTimer>
 #include <QTimer>
 #include <QSettings>
-#include <QKeyEvent>
 #include <QCoreApplication>
 
 #if ANDROID
@@ -39,9 +42,11 @@ Huestacean::Huestacean(QObject *parent)
     connect(bridgeDiscovery, SIGNAL(modelChanged()),
         this, SLOT(connectBridges()));
 
+#if WITH_HUESTACEAN_GUI
     eImageProvider = new ScreenSyncImageProvider(this);
     extern QQmlApplicationEngine* engine;
     engine->addImageProvider("entimage", eImageProvider);
+#endif
 
     emit hueInit();
 
@@ -56,7 +61,9 @@ Huestacean::Huestacean(QObject *parent)
     mipMapGenerationEnabled = true;
 #endif
 
+#if WITH_HUESTACEAN_GUI
     qmlRegisterType<EntertainmentGroup>();
+#endif
 
     huestaceanLock.lock();
     huestaceanInstance = this;
@@ -148,6 +155,7 @@ void Huestacean::ResetSettings()
 
 void Huestacean::pressedEnter()
 {
+#if WITH_HUESTACEAN_GUI
 	extern QQmlApplicationEngine* engine;
 	QObject* rootObject = engine->rootObjects().first();
 	QObject* qmlObject = rootObject->findChild<QObject*>("window");
@@ -157,6 +165,7 @@ void Huestacean::pressedEnter()
 
 	event = new QKeyEvent(QEvent::KeyRelease, Qt::Key_Space, Qt::NoModifier);
 	QCoreApplication::postEvent(rootObject, event);
+#endif
 }
 
 int Huestacean::getMessageSendElapsed()
@@ -797,6 +806,7 @@ void Huestacean::streamingGroupDestroyed()
     streamingGroup = nullptr;
 }
 
+#if WITH_HUESTACEAN_GUI
 ScreenSyncImageProvider::ScreenSyncImageProvider(Huestacean* parent)
     : QQuickImageProvider(QQmlImageProviderBase::Image), huestaceanParent(parent)
 {
@@ -868,6 +878,7 @@ QImage ScreenSyncImageProvider::requestImage(const QString &id, QSize *size, con
     huestaceanParent->screenLock.unlock();
     return img;
 }
+#endif
 
 
 

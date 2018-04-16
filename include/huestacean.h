@@ -2,13 +2,17 @@
 
 #include <QObject>
 #include <QStringListModel>
-#include <QQuickImageProvider>
 #include <QReadWriteLock>
 #include <QAtomicInteger>
+
+#define WITH_HUESTACEAN_GUI 0
+#if WITH_HUESTACEAN_GUI
+#include <QQuickImageProvider>
 #include <QColor>
+#include "objectmodel.h"
+#endif
 
 #include "huebridge.h"
-#include "objectmodel.h"
 #include "bridgediscovery.h"
 
 #if !ANDROID
@@ -109,6 +113,7 @@ struct ScreenSyncScreen
     }
 };
 
+#if WITH_HUESTACEAN_GUI
 class ScreenSyncImageProvider : public QQuickImageProvider
 {
 public:
@@ -119,6 +124,7 @@ public:
 private:
     Huestacean * huestaceanParent;
 };
+#endif
 // END SCREEN SYNC ------------------------------
 //-----------------------------------------------
 

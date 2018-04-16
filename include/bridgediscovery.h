@@ -3,7 +3,6 @@
 #include <QObject>
 #include <QUdpSocket>
 #include "huebridge.h"
-#include "objectmodel.h"
 
 class BridgeDiscovery : public QObject
 {

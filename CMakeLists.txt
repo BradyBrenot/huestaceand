@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 3.9)
+project(huestaceand)
 
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
+set(HUESTACEAN_NO_CLIENT 1)
+
+add_subdirectory(libhuestacean)
+add_subdirectory(screen_capture_lite EXCLUDE_FROM_ALL)
+add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
-
-project(huestaceand)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
@@ -31,11 +36,17 @@ set(HEADERS
 
 QT5_WRAP_CPP(HEADERS_MOC ${HEADERS})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/libhuestacean/include ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}/libhuestacean/include 
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${Qt5Core_INCLUDES}
+	${Qt5Network_INCLUDES}
+)
 
-add_subdirectory(libhuestacean)
-add_subdirectory(screen_capture_lite)
-add_subdirectory(mbedtls)
+include(ExternalProject REQUIRED)
+
 
 set(LIBRARIES
    ${LIBRARIES}
@@ -43,6 +54,9 @@ set(LIBRARIES
    Qt5::Network
    screen_capture_lite
    mbedtls
+   mbedx509
+   mbedcrypto
+   libhuestacean
 )
 
 #screen capture additional requirements
@@ -50,6 +64,9 @@ if(WIN32)
    set(LIBRARIES
       ${LIBRARIES}
       Dwmapi
+	  wsock32
+	  ws2_32
+	  legacy_stdio_definitions
    )
 elseif(APPLE)
    find_library(corefoundation_lib CoreFoundation)
