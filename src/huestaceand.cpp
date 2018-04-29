@@ -37,7 +37,7 @@ bool Huestaceand::listen(int port)
 void Huestaceand::stop()
 {
 	m_server->stop();
-	m_server = nullptr;
+	m_server.clear();
 	emit stopped();
 }
 
