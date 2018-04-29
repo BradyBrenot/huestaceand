@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSharedPointer>
 
 class Huestaceand : public QObject
 {
@@ -12,10 +13,13 @@ public:
 
 public slots:
 	//Starts the daemon, begins listening for commands
-	void listen();
+	bool listen(int port);
 	void stop();
 
 signals:
 	void listening();
 	void stopped();
+
+private:
+	QSharedPointer<class Server> m_server;
 };

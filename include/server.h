@@ -1,7 +1,9 @@
 #include <memory>
 
 #include <QThread>
-#include <QSharedPointer>-
+#include <QSharedPointer>
+#include <QAtomicInt>
+#include <QMutex>
 
 #include <grpc/grpc.h>
 #include <grpcpp/server.h>
@@ -16,9 +18,10 @@ class Server : public QThread, public HuestaceanServer::Service
 
 public:
 
-	Server(QObject *parent = Q_NULLPTR);
+	Server(QObject *parent = Q_NULLPTR, int inPort = 55589);
 	virtual ~Server();
 	void stop();
+	bool isListening();
 
 signals:
 	void listening();
@@ -26,5 +29,7 @@ signals:
 protected:
 	virtual void run() override;
 
+	QMutex serverMutex;
+	int port;
 	std::unique_ptr<grpc::Server> m_server;
 };
