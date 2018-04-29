@@ -1,0 +1,15 @@
+language: cpp
+
+addons:
+  apt:
+    packages:
+    - libqt5core5a
+    - libqt5network5
+	- libqt5test5
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make && make test
