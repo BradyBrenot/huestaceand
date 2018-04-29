@@ -18,7 +18,4 @@ public slots:
 signals:
 	void listening();
 	void stopped();
-
-private:
-	bool m_listening;
 };
