@@ -18,20 +18,15 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
 
+set(MAIN_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+
 set(SOURCES
    ${SOURCES}
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/bridgediscovery.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/entertainment.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/huebridge.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/huestacean.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/huestaceand.cpp
 )
 set(HEADERS
    ${HEADERS}
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/bridgediscovery.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/entertainment.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/huebridge.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/include/huestacean.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/huestaceand.h
 )
 
 QT5_WRAP_CPP(HEADERS_MOC ${HEADERS})
@@ -104,5 +99,25 @@ elseif(LINUX)
    )
 endif()
 
-add_executable(huestaceand ${SOURCES} ${HEADERS} ${HEADERS_MOC})
+add_executable(huestaceand ${MAIN_SOURCE} ${SOURCES} ${HEADERS} ${HEADERS_MOC})
 target_link_libraries(huestaceand ${LIBRARIES})
+
+### Tests
+
+enable_testing()
+
+# Prepare "Catch" library for other executables
+set(CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests/catch)
+add_library(Catch INTERFACE)
+target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
+
+# Make test executable
+set(TEST_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp)
+add_executable(huestaceand_tests ${TEST_SOURCES} ${SOURCES} ${HEADERS} ${HEADERS_MOC})
+target_link_libraries(huestaceand_tests Catch ${LIBRARIES})
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/tests/catch/cmake/ParseAndAddCatchTests.cmake)
+ParseAndAddCatchTests(huestaceand_tests)
+
+#include(${CMAKE_CURRENT_SOURCE_DIR}/tests/catch/cmake/Catch.cmake)
+#catch_discover_tests(huestaceand_tests)

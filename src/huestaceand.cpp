@@ -1,6 +1,6 @@
 #include "huestaceand.h"
 
-Huestaceand::Huestaceand(QObject* parent /*= nullptr*/)
+Huestaceand::Huestaceand(QObject* parent /*= nullptr*/) : QObject(parent)
 {
 
 }

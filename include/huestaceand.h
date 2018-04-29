@@ -1,13 +1,15 @@
 #pragma once
 
+#include <QObject>
+
 class Huestaceand : public QObject
 {
 	Q_OBJECT
 
 public:
-	Huestaceand(QObject* parent = nullptr) : QObject(parent) {}
+	Huestaceand(QObject* parent = nullptr);
 
-public slots :
+public slots:
 	//Starts the daemon, begins listening for commands
 	void listen();
 	void stop();
