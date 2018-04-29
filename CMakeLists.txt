@@ -23,10 +23,12 @@ set(MAIN_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 set(SOURCES
    ${SOURCES}
    ${CMAKE_CURRENT_SOURCE_DIR}/src/huestaceand.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
 )
 set(HEADERS
    ${HEADERS}
    ${CMAKE_CURRENT_SOURCE_DIR}/include/huestaceand.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/server.h
 )
 
 QT5_WRAP_CPP(HEADERS_MOC ${HEADERS})
