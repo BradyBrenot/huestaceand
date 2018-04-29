@@ -1,4 +1,5 @@
 language: cpp
+cache: ccache
 
 #yoink from https://github.com/smasherprog/screen_capture_lite
 matrix:
