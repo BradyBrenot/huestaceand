@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 
 #include <QThread>
@@ -14,7 +16,7 @@
 
 class Server : public QThread, public HuestaceanServer::Service
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 
