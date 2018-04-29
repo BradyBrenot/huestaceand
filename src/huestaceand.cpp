@@ -1,4 +1,5 @@
 #include "huestaceand.h"
+#include "server.h"
 
 Huestaceand::Huestaceand(QObject* parent /*= nullptr*/) : QObject(parent)
 {
@@ -17,5 +18,5 @@ void Huestaceand::stop()
 
 bool Huestaceand::isListening()
 {
-	return false
+	return false;
 }

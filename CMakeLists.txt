@@ -5,8 +5,6 @@ if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
-set(HUESTACEAN_NO_CLIENT 1)
-
 add_subdirectory(libhuestacean)
 add_subdirectory(screen_capture_lite EXCLUDE_FROM_ALL)
 add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
@@ -14,6 +12,8 @@ add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
+
+include(libhuestacean/cmake/Win32Macro.cmake)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Network REQUIRED)
@@ -35,6 +35,7 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/mbedtls/include
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_SOURCE_DIR}/libhuestacean/include 
+	${CMAKE_CURRENT_BINARY_DIR}/libhuestacean
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${Qt5Core_INCLUDES}
 	${Qt5Network_INCLUDES}

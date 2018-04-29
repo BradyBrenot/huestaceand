@@ -1,10 +1,11 @@
 language: cpp
 
+addons:
+  apt:
+    packages:
+    - qtbase5-dev
+
 before_script:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libqt5core5a
-  - sudo apt-get install -y libqt5network5
-  - sudo apt-get install -y libqt5test5
   - mkdir build
   - cd build
   - cmake ..
