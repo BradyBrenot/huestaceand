@@ -1,28 +1,26 @@
 #define CATCH_CONFIG_MAIN
 #include "catch/catch.hpp"
-
 #include "huestaceand.h"
+
+#include <QSignalSpy>
 
 TEST_CASE("daemon starts and stops on command", "") {
 
 	Huestaceand* daemon = new Huestaceand(nullptr);
 
 	SECTION("daemon can be started") {
+		QSignalSpy spy(daemon, SIGNAL(listening()));
 		daemon->listen();
+
+		REQUIRE(spy.count() == 1);
+		REQUIRE(daemon->isListening());
 	}
 
 	SECTION("daemon can be stopped") {
+		QSignalSpy spy(daemon, SIGNAL(stopped()));
 		daemon->stop();
-		//int* bean = nullptr;
-		//int hello = *bean;
-		//REQUIRE(hello == 3);
-	}
 
-	SECTION("daemon can be something") {
-		REQUIRE(1 == 2);
+		REQUIRE(spy.count() == 1);
+		REQUIRE(!daemon->isListening());
 	}
-}
-
-TEST_CASE("asdfasdfasdfommand", "") {
-	REQUIRE(2 == 4);
 }

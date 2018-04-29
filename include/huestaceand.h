@@ -8,6 +8,7 @@ class Huestaceand : public QObject
 
 public:
 	Huestaceand(QObject* parent = nullptr);
+	bool isListening();
 
 public slots:
 	//Starts the daemon, begins listening for commands
@@ -17,4 +18,7 @@ public slots:
 signals:
 	void listening();
 	void stopped();
+
+private:
+	bool m_listening;
 };
