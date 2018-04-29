@@ -5,7 +5,7 @@ addons:
     packages:
     - qtbase5-dev
     - libxinerama-dev
-    - libxext-dev
+    - libxtst-dev
 
 before_script:
   - mkdir build
