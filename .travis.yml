@@ -4,8 +4,8 @@ addons:
   apt:
     packages:
     - qtbase5-dev
-	- libxinerama-dev
-	- libxext-dev
+    - libxinerama-dev
+    - libxext-dev
 
 before_script:
   - mkdir build
