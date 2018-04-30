@@ -68,7 +68,7 @@ TEST_CASE("daemon starts and stops on command", "") {
 TEST_CASE("server can start and stop", "") {
 	//////////////////////////////////////////////////////////////////////////
 	//Startup
-	QThread::Sleep(100);
+	QThread::msleep(100);
 	QSharedPointer<Server> server = QSharedPointer<Server>(new Server(nullptr, test_port++), doDeleteLater);
 
 	REQUIRE(!server->isRunning());

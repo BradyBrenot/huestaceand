@@ -5,6 +5,10 @@ if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+endif()
+
 add_subdirectory(libhuestacean)
 add_subdirectory(screen_capture_lite EXCLUDE_FROM_ALL)
 add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
