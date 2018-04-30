@@ -6,6 +6,7 @@
 #include <QSignalSpy>
 #include <QSharedPointer>
 #include <QElapsedTimer>
+#include <QThread>
 
 int main(int argc, char* argv[])
 {
@@ -30,7 +31,7 @@ static bool waitOrTimeout(std::function<bool()> waitUntil, qint64 timeout)
 	bool success = waitUntil();
 	while (!success && !timer.hasExpired(timeout))
 	{
-		Sleep(100);
+		QThread::msleep(100);
 		success = waitUntil();
 	}
 
@@ -67,7 +68,7 @@ TEST_CASE("daemon starts and stops on command", "") {
 TEST_CASE("server can start and stop", "") {
 	//////////////////////////////////////////////////////////////////////////
 	//Startup
-	Sleep(100);
+	QThread::Sleep(100);
 	QSharedPointer<Server> server = QSharedPointer<Server>(new Server(nullptr, test_port++), doDeleteLater);
 
 	REQUIRE(!server->isRunning());
@@ -85,6 +86,6 @@ TEST_CASE("server can start and stop", "") {
 	// Shutdown
 	QSignalSpy stoppedSpy(server.data(), SIGNAL(finished()));
 	server->stop();
-	Sleep(100);
+	QThread::msleep(100);
 	REQUIRE(stoppedSpy.count() == 1);
 }
