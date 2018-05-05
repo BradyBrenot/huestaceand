@@ -36,6 +36,8 @@ void Server::run()
 
 		serverMutex.lock();
 		m_server = nullptr;
+	} else {
+		qWarning() << "failed to start server!";
 	}
 	
 	serverMutex.unlock();

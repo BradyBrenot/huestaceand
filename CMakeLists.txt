@@ -132,6 +132,7 @@ target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 set(TEST_SOURCES
 	${SOURCES}
 	${CMAKE_CURRENT_SOURCE_DIR}/tests/test.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/tests/api.cpp
 )
 
 set(TEST_HEADERS

@@ -22,22 +22,6 @@ static void doDeleteLater(QObject *obj)
 	obj->deleteLater();
 }
 
-static bool waitOrTimeout(std::function<bool()> waitUntil, qint64 timeout)
-{
-	QElapsedTimer timer;
-	timer.start();
-
-	//wait until the server has started
-	bool success = waitUntil();
-	while (!success && !timer.hasExpired(timeout))
-	{
-		QThread::msleep(100);
-		success = waitUntil();
-	}
-
-	return success;
-}
-
 static int test_port = 55510;
 
 TEST_CASE("daemon starts and stops on command", "") {
@@ -68,7 +52,6 @@ TEST_CASE("daemon starts and stops on command", "") {
 TEST_CASE("server can start and stop", "") {
 	//////////////////////////////////////////////////////////////////////////
 	//Startup
-	QThread::msleep(100);
 	QSharedPointer<Server> server = QSharedPointer<Server>(new Server(nullptr, test_port++), doDeleteLater);
 
 	REQUIRE(!server->isRunning());
@@ -77,15 +60,15 @@ TEST_CASE("server can start and stop", "") {
 	server->start();
 
 	bool startedSuccessfully = startedSpy.wait();
+	bool listening = listeningSpy.count() == 1 || listeningSpy.wait();
 	
 	REQUIRE(startedSuccessfully);
-	REQUIRE(listeningSpy.count() == 1);
+	REQUIRE(listening);
 	REQUIRE(server->isRunning());
 
 	//////////////////////////////////////////////////////////////////////////
 	// Shutdown
 	QSignalSpy stoppedSpy(server.data(), SIGNAL(finished()));
 	server->stop();
-	QThread::msleep(100);
-	REQUIRE(stoppedSpy.count() == 1);
+	REQUIRE((stoppedSpy.count() == 1 || stoppedSpy.wait()));
 }
