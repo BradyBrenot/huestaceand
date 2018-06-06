@@ -6,3 +6,5 @@
 #define qFatal      qDebug
 #define qCritical   qDebug
 #endif
+
+extern class QNetworkAccessManager* qnam;

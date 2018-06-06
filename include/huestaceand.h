@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include <QSharedPointer>
+#include <memory>
 
 class Huestaceand : public QObject
 {
@@ -21,5 +21,7 @@ signals:
 	void stopped();
 
 private:
-	QSharedPointer<class Server> m_server;
+	std::shared_ptr<class Server> m_server;
+
+	std::vector<std::unique_ptr<class DeviceProviderDiscovery>> discoveries;
 };

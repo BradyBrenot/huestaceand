@@ -3,6 +3,13 @@
 #include <string>
 #include <QDebug>
 
+using grpc::ServerBuilder;
+using grpc::ServerContext;
+using grpc::ServerReader;
+using grpc::ServerReaderWriter;
+using grpc::ServerWriter;
+using grpc::Status;
+
 Server::Server(QObject *parent /*= Q_NULLPTR*/, int inPort /*= 55589*/)
 	: QThread(parent),
 	m_server(),
@@ -64,4 +71,26 @@ bool Server::isListening()
 	serverMutex.unlock();
 
 	return hasServer;
+}
+
+Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::GetDeviceProvidersRequest* request, libhuestacean::GetDeviceProvidersResponse* response)
+{
+	return Status::OK;
+}
+
+Status Server::GetDevices(ServerContext* context, const libhuestacean::GetDevicesRequest* request, libhuestacean::GetDevicesResponse* response)
+{
+	return Status::OK;
+}
+Status Server::GetRooms(ServerContext* context, const libhuestacean::GetRoomsRequest* request, libhuestacean::GetRoomsResponse* response)
+{
+	return Status::OK;
+}
+Status Server::GetDeviceProviderArchetypes(ServerContext* context, const libhuestacean::GetDeviceProviderArchetypesRequest* request, libhuestacean::GetDeviceProviderArchetypesResponse* response)
+{
+	return Status::OK;
+}
+Status Server::GetDeviceArchetypes(ServerContext* context, const libhuestacean::GetDeviceArchetypesRequest* request, libhuestacean::GetDeviceArchetypesResponse* response)
+{
+	return Status::OK;
 }

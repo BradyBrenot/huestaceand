@@ -13,7 +13,7 @@ add_subdirectory(libhuestacean)
 add_subdirectory(screen_capture_lite EXCLUDE_FROM_ALL)
 add_subdirectory(mbedtls EXCLUDE_FROM_ALL)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTORCC ON)
 
@@ -34,11 +34,17 @@ set(SOURCES
    ${SOURCES}
    ${CMAKE_CURRENT_SOURCE_DIR}/src/huestaceand.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/deviceprovider.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/hue/huediscovery.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/hue/huebridge.cpp
 )
 set(HEADERS
    ${HEADERS}
    ${CMAKE_CURRENT_SOURCE_DIR}/include/huestaceand.h
    ${CMAKE_CURRENT_SOURCE_DIR}/include/server.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/deviceprovider.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/hue/huediscovery.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/hue/huebridge.h
 )
 
 QT5_WRAP_CPP(HEADERS_MOC ${HEADERS})

@@ -52,12 +52,12 @@ TEST_CASE("can use the API", "") {
 	// Connect
 	std::string str = (QString("localhost:") + QString::number(testPort)).toStdString();
 	auto channel = grpc::CreateChannel(str.c_str(), grpc::InsecureChannelCredentials());
-	auto stub = HuestaceanServer::NewStub(channel);
+	auto stub = libhuestacean::HuestaceanServer::NewStub(channel);
 
 	SECTION("can enumerate device archetypes") {
 		grpc::ClientContext c;
-		GetDeviceArchetypesRequest req;
-		GetDeviceArchetypesResponse res;
+		libhuestacean::GetDeviceArchetypesRequest req;
+		libhuestacean::GetDeviceArchetypesResponse res;
 
 		auto status = stub->GetDeviceArchetypes(&c, req, &res);
 		CAPTURE(status.error_code());
@@ -69,8 +69,8 @@ TEST_CASE("can use the API", "") {
 
 	SECTION("can enumerate device provider archetypes") {
 		grpc::ClientContext c;
-		GetDeviceProviderArchetypesRequest req;
-		GetDeviceProviderArchetypesResponse res;
+		libhuestacean::GetDeviceProviderArchetypesRequest req;
+		libhuestacean::GetDeviceProviderArchetypesResponse res;
 
 		auto status = stub->GetDeviceProviderArchetypes(&c, req, &res);
 		CAPTURE(status.error_code());
@@ -83,8 +83,8 @@ TEST_CASE("can use the API", "") {
 
 	SECTION("can enumerate device providers") {
 		grpc::ClientContext c;
-		GetDeviceProvidersRequest req;
-		GetDeviceProvidersResponse res;
+		libhuestacean::GetDeviceProvidersRequest req;
+		libhuestacean::GetDeviceProvidersResponse res;
 
 		auto status = stub->GetDeviceProviders(&c, req, &res);
 		CAPTURE(status.error_code());
@@ -97,8 +97,8 @@ TEST_CASE("can use the API", "") {
 
 	SECTION("can enumerate devices") {
 		grpc::ClientContext c;
-		GetDevicesRequest req;
-		GetDevicesResponse res;
+		libhuestacean::GetDevicesRequest req;
+		libhuestacean::GetDevicesResponse res;
 
 		auto status = stub->GetDevices(&c, req, &res);
 		CAPTURE(status.error_code());
@@ -111,8 +111,8 @@ TEST_CASE("can use the API", "") {
 
 	SECTION("can enumerate rooms") {
 		grpc::ClientContext c;
-		GetRoomsRequest req;
-		GetRoomsResponse res;
+		libhuestacean::GetRoomsRequest req;
+		libhuestacean::GetRoomsResponse res;
 
 		auto status = stub->GetRooms(&c, req, &res);
 		CAPTURE(status.error_code());
