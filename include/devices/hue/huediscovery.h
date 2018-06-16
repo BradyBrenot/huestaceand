@@ -16,7 +16,7 @@ class BridgeDiscovery : public DeviceProviderDiscovery
 
 public:
 
-    explicit BridgeDiscovery(QObject *parent = nullptr);
+    explicit BridgeDiscovery(Huestaceand *parent = nullptr);
     virtual ~BridgeDiscovery();
     void saveBridges();
 	virtual QString getName() override;
@@ -34,5 +34,6 @@ public slots:
 private:
     bool hasSearched;
 
+	std::vector<std::shared_ptr<DeviceProvider> > bridges;
     QVector<HueBridgeSavedSettings> savedBridges;
 };

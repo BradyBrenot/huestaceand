@@ -13,6 +13,8 @@
 #include "devices/hue/huediscovery.h"
 #include "devices/hue/huebridge.h"
 #include "devices/hue/entertainment.h"
+#include "devices/archetypes.h"
+#include "huestaceand.h"
 
 QString SETTING_USERNAME = "Bridge/Username";
 QString SETTING_CLIENTKEY = "Bridge/clientkey";
@@ -152,7 +154,13 @@ void HueBridge::replied(QNetworkReply *reply)
 		QJsonObject obj = replyJson.object();
 
 		{
-			auto l = lockDeviceWrite();
+			auto l = deviceDiscoveryParent->daemonParent->lockDeviceWrite();
+
+			for (auto& device : devices)
+			{
+				l.removeDevice(device.second->id);
+			}
+
 			devices.clear();
 
 			for (auto it = obj.begin(); it != obj.end(); ++it)
@@ -160,11 +168,9 @@ void HueBridge::replied(QNetworkReply *reply)
 				QString string = it.key();
 				device_id id = static_cast<device_id>(string.toInt());
 				QString name = it.value().toObject()["name"].toString();
-				createAndAddDeviceFromArchetype(id, HueArchetypes::normalLight, name);
+				createAndAddDeviceFromArchetype(HueArchetypes::normalLight, name);
 			}
 		}
-
-		emit devicesChanged();
 	} else if (reply->request().url().toString().endsWith("/groups"))
 	{
 		//#todo
@@ -228,6 +234,11 @@ QString HueBridge::getName()
 {
 	//#todo this
 	return QString();
+}
+
+archetype_id HueBridge::getArchetype()
+{
+	return Archetype::HueBridge;
 }
 
 int HueBridge::getMaxLowLatencyDevices()

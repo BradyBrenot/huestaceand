@@ -20,7 +20,7 @@ class Server : public QThread, public libhuestacean::HuestaceanServer::Service
 
 public:
 
-	Server(QObject *parent = Q_NULLPTR, int inPort = 55589);
+	Server(class Huestaceand *parent, int inPort = 55589);
 	virtual ~Server();
 	void stop();
 	bool isListening();
@@ -40,4 +40,5 @@ protected:
 	QMutex serverMutex;
 	int port;
 	std::unique_ptr<grpc::Server> m_server;
+	Huestaceand* daemonParent;
 };

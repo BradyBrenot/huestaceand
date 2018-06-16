@@ -1,5 +1,6 @@
 #include "devices/hue/huediscovery.h"
 #include "utility.h"
+#include "huestaceand.h"
 
 #include <QNetworkInterface>
 #include <QHostAddress>
@@ -14,7 +15,7 @@ namespace HueArchetypes
 
 //////////////////////////////////////////////////////////////////////////
 
-BridgeDiscovery::BridgeDiscovery(QObject *parent)
+BridgeDiscovery::BridgeDiscovery(Huestaceand *parent)
 	: DeviceProviderDiscovery(parent)
 	, hasSearched(false)
 {
@@ -141,15 +142,13 @@ void BridgeDiscovery::processPendingDatagrams()
 
 void BridgeDiscovery::saveBridges()
 {
-	QMutexLocker lock(&deviceProvidersLock);
-
 	QSettings settings;
 	settings.beginGroup("BridgeDiscovery");
 
 	settings.beginWriteArray("bridges");
 	int i = 0;
-	for (auto& deviceProvider : m_deviceProviders) {
-		HueBridge* bridge = qobject_cast<HueBridge*>(deviceProvider.second.get());
+	for (auto& provider : bridges) {
+		HueBridge* bridge = qobject_cast<HueBridge*>(provider.get());
 
 		settings.setValue("id", bridge->id);
 		settings.setValue("address", bridge->address.toString());
@@ -164,9 +163,8 @@ void BridgeDiscovery::saveBridges()
 void BridgeDiscovery::tryDescribeBridge(QString ipAddress)
 {
 	//See if bridge already added
-	for (auto& deviceProvider : m_deviceProviders)
-	{
-		HueBridge* bridge = qobject_cast<HueBridge*>(deviceProvider.second.get());
+	for (auto& provider : bridges) {
+		HueBridge* bridge = qobject_cast<HueBridge*>(provider.get());
 		if (bridge->address == QHostAddress(ipAddress))
 		{
 			return;
@@ -202,9 +200,8 @@ void BridgeDiscovery::replied(QNetworkReply *reply)
 	const QString url = reply->request().url().toString();
 	const QString ipAddress = url.mid(url.indexOf("http://") + 7, url.indexOf("/description.xml") - url.indexOf("http://") - 7);
 
-	for (auto& deviceProvider : m_deviceProviders)
-	{
-		HueBridge* bridge = qobject_cast<HueBridge*>(deviceProvider.second.get());
+	for (auto& provider : bridges) {
+		HueBridge* bridge = qobject_cast<HueBridge*>(provider.get());
 		if (bridge->address == QHostAddress(ipAddress)
 			|| bridge->id == id)
 		{
@@ -223,16 +220,15 @@ void BridgeDiscovery::replied(QNetworkReply *reply)
 			HueBridgeSavedSettings newSettings(settings);
 			newSettings.address = ipAddress;
 
-			QMutexLocker lock(&deviceProvidersLock);
-			m_deviceProviders[id] = std::shared_ptr<DeviceProvider>(new HueBridge(this, newSettings));
-			emit foundDeviceProvider(m_deviceProviders[id]);
+			auto providerId = daemonParent->addDeviceProvider(std::shared_ptr<DeviceProvider>(new HueBridge(this, newSettings)));
+			emit foundDeviceProvider(daemonParent->getDeviceProvider(providerId));
 			return;
 		}
 	}
 
 	HueBridgeSavedSettings Settings = HueBridgeSavedSettings(id, QHostAddress(ipAddress));
-	m_deviceProviders[id] = std::shared_ptr<DeviceProvider>(new HueBridge(this, Settings));
-	emit foundDeviceProvider(m_deviceProviders[id]);
+	auto providerId = daemonParent->addDeviceProvider(std::shared_ptr<DeviceProvider>(new HueBridge(this, Settings)));
+	emit foundDeviceProvider(daemonParent->getDeviceProvider(providerId));
 }
 
 QString BridgeDiscovery::getName()

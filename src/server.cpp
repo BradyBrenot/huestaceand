@@ -1,5 +1,7 @@
 #include "server.h"
 #include "utility.h"
+#include "huestaceand.h"
+#include "devices/deviceprovider.h"
 #include <string>
 #include <QDebug>
 
@@ -10,11 +12,12 @@ using grpc::ServerReaderWriter;
 using grpc::ServerWriter;
 using grpc::Status;
 
-Server::Server(QObject *parent /*= Q_NULLPTR*/, int inPort /*= 55589*/)
+Server::Server(class Huestaceand *parent /*= Q_NULLPTR*/, int inPort /*= 55589*/)
 	: QThread(parent),
 	m_server(),
 	port(inPort),
-	serverMutex()
+	serverMutex(),
+	daemonParent(parent)
 {
 
 }
@@ -75,6 +78,17 @@ bool Server::isListening()
 
 Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::GetDeviceProvidersRequest* request, libhuestacean::GetDeviceProvidersResponse* response)
 {
+	auto rpcProviders = response->mutable_providers();
+
+	auto providers = daemonParent->getDeviceProviders();
+	for (auto& provider : providers)
+	{
+		::libhuestacean::DeviceProvider& rpcProvider = (*rpcProviders)[provider.first];
+		const QString name = provider.second->getName();
+		rpcProvider.set_archetype_id((uint32_t)provider.second->getArchetype());
+		rpcProvider.set_name(name.toUtf8());
+	}
+
 	return Status::OK;
 }
 

@@ -45,6 +45,7 @@ public:
     void handleStreamingEnabled();
 
 	virtual QString getName() override;
+	virtual archetype_id getArchetype() override;
 	virtual int getMaxLowLatencyDevices() override;
 	virtual void setUsedDevices(std::vector<device_id> devices) override;
 	virtual void setLowLatencyDevices(std::vector<device_id> devices) override;
