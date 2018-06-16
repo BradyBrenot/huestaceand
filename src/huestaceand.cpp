@@ -25,12 +25,11 @@ Huestaceand::Huestaceand(QObject* parent /*= nullptr*/)
 
 bool Huestaceand::listen(int port)
 {
-	if (m_server)
-	{
+	if (m_server) {
 		return false;
 	}
 
-	m_server = std::shared_ptr<Server>(new Server(nullptr, port), doDeleteLater);
+	m_server = std::shared_ptr<Server>(new Server(this, port), doDeleteLater);
 
 	if (!m_server) {
 		return false;
@@ -41,7 +40,12 @@ bool Huestaceand::listen(int port)
 
 	m_server->start();
 
-	discoveries.push_back(std::unique_ptr<class DeviceProviderDiscovery>(new BridgeDiscovery()));
+	discoveries.push_back(std::unique_ptr<class DeviceProviderDiscovery>(new BridgeDiscovery(this)));
+
+	for (auto& disco : discoveries)
+	{
+		disco->searchForDeviceProviders();
+	}
 	
 	return true;
 }

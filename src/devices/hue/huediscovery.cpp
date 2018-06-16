@@ -26,10 +26,14 @@ BridgeDiscovery::BridgeDiscovery(Huestaceand *parent)
 BridgeDiscovery::~BridgeDiscovery()
 {
 	saveBridges();
+	emit closeSockets();
 }
 
 void BridgeDiscovery::searchForDeviceProviders()
 {
+	//"Immediately" kill any sockets from previous search
+	emit closeSockets();
+
 	////////////////////////////////////////////////
 	//0a) this is the first search
 	//   - Add known bridges (from QSettings)

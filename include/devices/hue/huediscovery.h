@@ -26,6 +26,9 @@ public slots:
 	virtual void searchForDeviceProviders() override;
 	virtual void searchForDeviceProviderByIp(QHostAddress address) override;
 
+signals:
+	void closeSockets();
+
  private slots:
     void replied(QNetworkReply *reply);
     void tryDescribeBridge(QString ipAddress);

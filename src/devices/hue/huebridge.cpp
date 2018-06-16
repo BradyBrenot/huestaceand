@@ -31,7 +31,7 @@ HueBridge::HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& Save
 	connect(qnam, SIGNAL(finished(QNetworkReply*)),
 		this, SLOT(replied(QNetworkReply*)));
 
-	connect(this, SIGNAL(connectedChanged()),
+	connect(this, SIGNAL(stateChanged(EDeviceState)),
 		this, SLOT(requestGroups()));
 
 	setState(EDeviceState::Disconnected);
