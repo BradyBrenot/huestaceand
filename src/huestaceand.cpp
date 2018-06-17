@@ -10,8 +10,6 @@ static void doDeleteLater(QObject *obj)
 	obj->deleteLater();
 }
 
-QNetworkAccessManager* qnam = nullptr;
-
 Huestaceand::Huestaceand(QObject* parent /*= nullptr*/) 
 	: QObject(parent),
 	enable_shared_from_this(),
@@ -19,8 +17,7 @@ Huestaceand::Huestaceand(QObject* parent /*= nullptr*/)
 	nextProviderId(0),
 	nextDeviceId(0)
 {
-	if (qnam == nullptr)
-		qnam = new QNetworkAccessManager(nullptr);
+
 }
 
 bool Huestaceand::listen(int port)

@@ -5,7 +5,7 @@
 DeviceProvider::DeviceProvider(DeviceProviderDiscovery* parent /* = nullptr */)
 	: QObject(parent), deviceDiscoveryParent(parent)
 {
-
+	qRegisterMetaType<EDeviceState>("EDeviceState");
 }
 
 DeviceProvider::~DeviceProvider()

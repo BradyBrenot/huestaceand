@@ -22,13 +22,14 @@ QString SETTING_CLIENTKEY = "Bridge/clientkey";
 HueBridge::HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& SavedSettings, bool bManuallyAdded/* = false*/, bool bReconnect/* = true*/)
 	: DeviceProvider(parent),
 	address(SavedSettings.address),
-	id(SavedSettings.id),
+	guid(SavedSettings.id),
 	username(SavedSettings.userName),
 	clientkey(SavedSettings.clientKey),
+	friendlyName(SavedSettings.friendlyName),
 	manuallyAdded(bManuallyAdded),
 	streamingDevices()
 {
-	connect(qnam, SIGNAL(finished(QNetworkReply*)),
+	connect(&Utility::getNetworkAccessManagerForThread(), SIGNAL(finished(QNetworkReply*)),
 		this, SLOT(replied(QNetworkReply*)));
 
 	connect(this, SIGNAL(stateChanged(EDeviceState)),
@@ -38,7 +39,7 @@ HueBridge::HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& Save
 
 	if (bReconnect)
 	{
-		metaObject()->method(metaObject()->indexOfMethod("connectToBridge()")).invoke(this, Qt::QueuedConnection);
+		metaObject()->method(metaObject()->indexOfMethod("connectToBridge()")).invoke(this, Qt::DirectConnection);
 	}
 }
 
@@ -56,6 +57,7 @@ QNetworkRequest HueBridge::makeRequest(QString path, bool bIncludeUser/* = true*
 		return request;
 	} else
 	{
+		qDebug() << "makeRequest" << QUrl(QString("http://%1/api%2").arg(address.toString(), path));
 		QNetworkRequest request = QNetworkRequest(QUrl(QString("http://%1/api%2").arg(address.toString(), path)));
 		request.setOriginatingObject(this);
 		return request;
@@ -70,7 +72,7 @@ void HueBridge::connectToBridge()
 	{
 		//Verify existing registration
 		QNetworkRequest qnr = makeRequest("/config");
-		qnam->get(qnr);
+		Utility::getNetworkAccessManagerForThread().get(qnr);
 	} else
 	{
 		//Register
@@ -82,25 +84,29 @@ void HueBridge::connectToBridge()
 		json.insert("devicetype", QString("huestacean#") + product);
 		json.insert("generateclientkey", true);
 
-		qnam->post(qnr, QJsonDocument(json).toJson());
+		Utility::getNetworkAccessManagerForThread().post(qnr, QJsonDocument(json).toJson());
 	}
 }
 void HueBridge::resetConnection()
 {
 	username = QString();
 	clientkey = QString();
-}
+} 
 void HueBridge::requestGroups()
 {
+	return;
+
 	QNetworkRequest qnr = makeRequest("/lights");
-	qnam->get(qnr);
+	Utility::getNetworkAccessManagerForThread().get(qnr);
 
 	qnr = makeRequest("/groups");
-	qnam->get(qnr);
+	Utility::getNetworkAccessManagerForThread().get(qnr);
 }
 
 void HueBridge::replied(QNetworkReply *reply)
 {
+	qDebug() << "got reply" << reply->request().url().toString();
+
 	if (reply->request().originatingObject() != this)
 		return;
 
@@ -146,6 +152,7 @@ void HueBridge::replied(QNetworkReply *reply)
 		} else
 		{
 			setState(EDeviceState::Connected);
+			friendlyName = replyJson.object()["name"].toString();
 		}
 	} else if (reply->request().url().toString().endsWith("/lights"))
 	{
@@ -212,12 +219,15 @@ void HueBridge::replied(QNetworkReply *reply)
 
 		QByteArray data = reply->readAll();
 		QJsonDocument replyJson = QJsonDocument::fromJson(data);
+		qWarning() << "Reply" << replyJson;
 	}
+
+	reply->close();
 }
 
 void HueBridge::askBridgeToToggleStreaming(bool enable)
 {
-	QNetworkRequest qnr = makeRequest(QString("/groups/%1").arg(id));
+	QNetworkRequest qnr = makeRequest(QString("/groups/%1").arg(guid));
 	qnr.setOriginatingObject(this);
 	qnr.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -227,13 +237,12 @@ void HueBridge::askBridgeToToggleStreaming(bool enable)
 	QJsonObject body;
 	body.insert("stream", stream);
 
-	qnam->put(qnr, QJsonDocument(body).toJson());
+	Utility::getNetworkAccessManagerForThread().put(qnr, QJsonDocument(body).toJson());
 }	
 
 QString HueBridge::getName()
 {
-	//#todo this
-	return QString();
+	return friendlyName;
 }
 
 archetype_id HueBridge::getArchetype()
@@ -254,4 +263,9 @@ void HueBridge::setUsedDevices(std::vector<device_id> devices)
 void HueBridge::setLowLatencyDevices(std::vector<device_id> devices)
 {
 	//#todo this
+}
+
+void HueBridge::doLink()
+{
+	connectToBridge();
 }

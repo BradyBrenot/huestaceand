@@ -48,14 +48,6 @@ struct Device
 	Device() : archetype(), lights(), id(), name() {}
 };
 
-enum class EDeviceState : uint8_t
-{
-	Disconnected = 0,
-	Connecting,
-	PendingLink,
-	Connected
-};
-
 /*
  * DeviceProvider contains, manages a set of devices. 
  * Devices can be read and written in a thread-safe manner.
@@ -80,6 +72,15 @@ class DeviceProvider: public QObject
 	Q_OBJECT
 
 public:
+	enum class EDeviceState
+	{
+		Disconnected = 0,
+		Connecting,
+		PendingLink,
+		Connected
+	};
+	Q_ENUM(EDeviceState)
+
 	DeviceProvider(class DeviceProviderDiscovery* parent = nullptr);
 	virtual ~DeviceProvider();
 	DeviceProviderDiscovery* deviceDiscoveryParent;

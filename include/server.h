@@ -30,6 +30,7 @@ public:
 	virtual ::grpc::Status GetRooms(::grpc::ServerContext* context, const libhuestacean::GetRoomsRequest* request, libhuestacean::GetRoomsResponse* response) override;
 	virtual ::grpc::Status GetDeviceProviderArchetypes(::grpc::ServerContext* context, const libhuestacean::GetDeviceProviderArchetypesRequest* request, libhuestacean::GetDeviceProviderArchetypesResponse* response) override;
 	virtual ::grpc::Status GetDeviceArchetypes(::grpc::ServerContext* context, const libhuestacean::GetDeviceArchetypesRequest* request, libhuestacean::GetDeviceArchetypesResponse* response) override;
+	virtual ::grpc::Status Link(::grpc::ServerContext* context, const libhuestacean::LinkRequest* request, libhuestacean::LinkResponse* response) override;
 
 signals:
 	void listening();

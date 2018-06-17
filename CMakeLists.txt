@@ -34,6 +34,7 @@ set(SOURCES
    ${SOURCES}
    ${CMAKE_CURRENT_SOURCE_DIR}/src/huestaceand.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/server.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/utility.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/deviceprovider.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/hue/huediscovery.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/devices/hue/huebridge.cpp
@@ -42,6 +43,7 @@ set(HEADERS
    ${HEADERS}
    ${CMAKE_CURRENT_SOURCE_DIR}/include/huestaceand.h
    ${CMAKE_CURRENT_SOURCE_DIR}/include/server.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/include/utility.h
    ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/deviceprovider.h
    ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/hue/huediscovery.h
    ${CMAKE_CURRENT_SOURCE_DIR}/include/devices/hue/huebridge.h

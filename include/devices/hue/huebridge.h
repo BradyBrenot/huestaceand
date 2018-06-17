@@ -17,17 +17,18 @@ struct HueBridgeSavedSettings
     QHostAddress address;
     QString userName;
     QString clientKey;
+	QString friendlyName;
 
     HueBridgeSavedSettings()
         : id(), address(), userName(), clientKey()
     {}
 
     HueBridgeSavedSettings(QString inId, QHostAddress inAddress)
-        : id(inId), address(inAddress), userName(), clientKey()
+        : id(inId), friendlyName(), address(inAddress), userName(), clientKey()
     {}
 
-    HueBridgeSavedSettings(QString inId, QHostAddress inAddress, QString inUserName, QString inClientKey)
-        : id(inId), address(inAddress), userName(inUserName), clientKey(inClientKey)
+    HueBridgeSavedSettings(QString inId, QString inFriendlyName, QHostAddress inAddress, QString inUserName, QString inClientKey)
+        : id(inId), friendlyName(inFriendlyName), address(inAddress), userName(inUserName), clientKey(inClientKey)
     {}
 };
 
@@ -39,6 +40,7 @@ public:
     explicit HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& SavedSettings, bool bManuallyAdded = false, bool bReconnect = true);
 	virtual ~HueBridge();
 
+	Q_INVOKABLE
     void connectToBridge();
     void resetConnection();
 
@@ -49,12 +51,13 @@ public:
 	virtual int getMaxLowLatencyDevices() override;
 	virtual void setUsedDevices(std::vector<device_id> devices) override;
 	virtual void setLowLatencyDevices(std::vector<device_id> devices) override;
+	virtual void doLink() override;
 
 	std::vector<device_id> streamingDevices;
     bool connected;
     bool manuallyAdded;
     QHostAddress address;
-    QString id;
+    QString guid;
     QString username;
     QString clientkey;
     QString friendlyName;

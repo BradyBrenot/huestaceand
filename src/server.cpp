@@ -4,6 +4,7 @@
 #include "devices/deviceprovider.h"
 #include <string>
 #include <QDebug>
+#include <QMetaObject>
 
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -87,11 +88,11 @@ Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::G
 		const QString name = provider.second->getName();
 		rpcProvider.set_archetype_id((uint32_t)provider.second->getArchetype());
 		rpcProvider.set_name(name.toUtf8());
+		rpcProvider.set_state((libhuestacean::DeviceProvider_State) provider.second->state.load());
 	}
 
 	return Status::OK;
 }
-
 Status Server::GetDevices(ServerContext* context, const libhuestacean::GetDevicesRequest* request, libhuestacean::GetDevicesResponse* response)
 {
 	return Status::OK;
@@ -107,4 +108,18 @@ Status Server::GetDeviceProviderArchetypes(ServerContext* context, const libhues
 Status Server::GetDeviceArchetypes(ServerContext* context, const libhuestacean::GetDeviceArchetypesRequest* request, libhuestacean::GetDeviceArchetypesResponse* response)
 {
 	return Status::OK;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+Status Server::Link(ServerContext* context, const libhuestacean::LinkRequest* request, libhuestacean::LinkResponse* response)
+{
+	auto deviceProvider = daemonParent->getDeviceProvider(request->device_id());
+	if (deviceProvider)
+	{
+		QMetaObject::invokeMethod(deviceProvider.get(), "link", Qt::QueuedConnection);
+		return Status::OK;
+	}
+
+	return Status(grpc::StatusCode::INVALID_ARGUMENT, grpc::string("requested device provider does not exist"));
 }
