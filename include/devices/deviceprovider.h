@@ -124,10 +124,14 @@ public:
 	virtual QString getName() = 0;
 	virtual archetype_id getArchetype() = 0;
 	virtual int getMaxLowLatencyDevices() = 0;
+
+	EDeviceState getState() {
+		return (EDeviceState) uint8_t(state);
+	}
+
+	//configure the set of currently-used devices. Any devices that are not "used" will not update, other applications can use them
 	virtual void setUsedDevices(std::vector<device_id> devices) = 0;
 	virtual void setLowLatencyDevices(std::vector<device_id> devices) = 0;
-
-	QAtomicInteger<uint8_t> state;
 
 	deviceprovider_id id;
 
@@ -167,6 +171,8 @@ protected:
 	friend DeviceProviderWriteLock;
 
 	QReadWriteLock rwlock;
+
+	QAtomicInteger<uint8_t> state;
 };
 
 class DeviceProviderDiscovery : public QObject

@@ -88,7 +88,7 @@ Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::G
 		const QString name = provider.second->getName();
 		rpcProvider.set_archetype_id((uint32_t)provider.second->getArchetype());
 		rpcProvider.set_name(name.toUtf8());
-		rpcProvider.set_state((libhuestacean::DeviceProvider_State) provider.second->state.load());
+		rpcProvider.set_state((libhuestacean::DeviceProvider_State) provider.second->getState());
 	}
 
 	return Status::OK;

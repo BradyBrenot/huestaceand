@@ -57,8 +57,7 @@ void Huestaceand::stop()
 
 void Huestaceand::tick()
 {
-	//What... was I going to do... in here... ??????
-	tickTimer.stop();
+	//Gather lights
 }
 
 bool Huestaceand::isListening()

@@ -15,6 +15,11 @@ class EffectInstanced : public QObject
 	Q_OBJECT
 
 	std::weak_ptr<Effect> sourceEffect;
-	virtual void Tick(double DeltaTime) {};
-	virtual void UpdateLight(Light& light, Box& bounds) = 0;
+
+	/*
+	 * Determine this effect's influence on a light with the given bounds.
+	 * This may be called for several lights, multiple times per second, and so must be fast.
+	 * => Costly effect updates should happen asynchronously and be cached.
+	 */
+	virtual void CalculateEffect(const Box& bounds, double& h, double& c, double& l) = 0;
 };

@@ -262,7 +262,8 @@ void HueBridge::setUsedDevices(std::vector<device_id> devices)
 
 void HueBridge::setLowLatencyDevices(std::vector<device_id> devices)
 {
-	//#todo this
+	//#todo support more than 10 devices, others without entertainment streaming
+	askBridgeToToggleStreaming(devices.size() > 0);
 }
 
 void HueBridge::doLink()
