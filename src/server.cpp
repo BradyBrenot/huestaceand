@@ -84,7 +84,7 @@ Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::G
 	auto providers = daemonParent->getDeviceProviders();
 	for (auto& provider : providers)
 	{
-		::libhuestacean::DeviceProvider& rpcProvider = (*rpcProviders)[provider.first];
+		::libhuestacean::DeviceProvider& rpcProvider = (*rpcProviders)[std::string(provider.first.toUtf8())];
 		const QString name = provider.second->getName();
 		rpcProvider.set_archetype_id((uint32_t)provider.second->getArchetype());
 		rpcProvider.set_name(name.toUtf8());
@@ -95,6 +95,33 @@ Status Server::GetDeviceProviders(ServerContext* context, const libhuestacean::G
 }
 Status Server::GetDevices(ServerContext* context, const libhuestacean::GetDevicesRequest* request, libhuestacean::GetDevicesResponse* response)
 {
+	auto rpcDevices = response->mutable_devices();
+	auto dps = daemonParent->getDeviceProviders();
+	for (const auto& dpPair : dps)
+	{
+		auto l = dpPair.second->lockDeviceWrite();
+		auto keys = l.keys();
+
+		for (auto& key : keys)
+		{
+			auto device = l[key];
+			::libhuestacean::Device& rpcDevice = (*rpcDevices)[std::string(key.toUtf8())];
+			rpcDevice.set_archetype_id(device.archetype);
+			rpcDevice.set_name(device.name.toUtf8());
+			auto rpcLights = rpcDevice.mutable_lights();
+
+
+			for (uint32_t i = 0; i < device.lights.size(); ++i)
+			{
+				auto& light = device.lights[i];
+				::libhuestacean::LightColor& rpcLight = (*rpcLights)[i];
+				rpcLight.set_h(light.desired_h);
+				rpcLight.set_s(light.desired_s);
+				rpcLight.set_l(light.desired_l);
+			}
+		}
+	}	
+
 	return Status::OK;
 }
 Status Server::GetRooms(ServerContext* context, const libhuestacean::GetRoomsRequest* request, libhuestacean::GetRoomsResponse* response)
@@ -114,7 +141,7 @@ Status Server::GetDeviceArchetypes(ServerContext* context, const libhuestacean::
 
 Status Server::Link(ServerContext* context, const libhuestacean::LinkRequest* request, libhuestacean::LinkResponse* response)
 {
-	auto deviceProvider = daemonParent->getDeviceProvider(request->device_id());
+	auto deviceProvider = daemonParent->getDeviceProvider(QString(request->device_id().c_str()));
 	if (deviceProvider)
 	{
 		QMetaObject::invokeMethod(deviceProvider.get(), "link", Qt::QueuedConnection);

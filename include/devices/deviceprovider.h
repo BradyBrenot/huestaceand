@@ -14,10 +14,8 @@
 #include <QAtomicInteger>
 #include <QString>
 
-typedef uint64_t archetype_id;
-typedef uint64_t device_id;
-typedef uint64_t light_id;
-typedef uint64_t deviceprovider_id;
+#include "types.h"
+#include "archetypes.h"
 
 struct Light
 {
@@ -48,6 +46,44 @@ struct Device
 	Device() : archetype(), lights(), id(), name() {}
 };
 
+//////////////////////////////////////////////////////////////////////////
+
+struct BaseDeviceProviderLock
+{
+	bool contains(device_id id);
+	std::vector<device_id> keys();
+	const Device& operator[](device_id id);
+
+	BaseDeviceProviderLock(std::shared_ptr<class DeviceProvider> parent);
+	BaseDeviceProviderLock(BaseDeviceProviderLock&& from);
+
+	virtual ~BaseDeviceProviderLock();
+
+protected:
+	BaseDeviceProviderLock() : m_parent() {};
+	std::shared_ptr<class DeviceProvider> m_parent;
+};
+
+struct DeviceProviderReadLock : public BaseDeviceProviderLock
+{
+	DeviceProviderReadLock(std::shared_ptr<class DeviceProvider> parent);
+	DeviceProviderReadLock(DeviceProviderReadLock&& from);
+};
+
+struct DeviceProviderWriteLock : public BaseDeviceProviderLock
+{
+	DeviceProviderWriteLock(std::shared_ptr<class DeviceProvider> parent);
+	DeviceProviderWriteLock(DeviceProviderWriteLock&& from);
+
+	virtual ~DeviceProviderWriteLock();
+
+	//#todo: is this dumb to do in bulk?
+	void SetDesiredColor(double h, double s, double l, device_id device, light_id light);
+
+private:
+	bool didDesiredLightColorChange;
+};
+
 /*
  * DeviceProvider contains, manages a set of devices. 
  * Devices can be read and written in a thread-safe manner.
@@ -67,7 +103,7 @@ struct Device
  * Aside from simply being timing-based, you might listen to
  * the desiredLightColorChanged() signal.
  */
-class DeviceProvider: public QObject
+class DeviceProvider: public QObject, public std::enable_shared_from_this<DeviceProvider>
 {
 	Q_OBJECT
 
@@ -93,12 +129,20 @@ public:
 
 	QAtomicInteger<uint8_t> state;
 
+	deviceprovider_id id;
+
+	//To access or write to the array of devices or the current state, you must use the appropriate lock
+	DeviceProviderReadLock lockDeviceRead();
+	DeviceProviderWriteLock lockDeviceWrite();
+
 public slots:
 	void link();
 	void start() { emit startRequested(); };
 	void stop() { emit stopRequested(); };
 
 signals:
+	void desiredLightColorChanged();
+	void devicesChanged();
 	void stateChanged(EDeviceState newState);
 	void startRequested();
 	void stopRequested();
@@ -116,32 +160,13 @@ protected:
 	std::unordered_map<device_id, std::shared_ptr<Device> > devices;
 
 	//Create a device, add it to the devices array, and return a reference to it.
-	std::shared_ptr<Device> createAndAddDeviceFromArchetype(archetype_id archetype, QString name = QString(""));
-};
+	std::shared_ptr<Device> createAndAddDeviceFromArchetype(archetype_id archetype, device_id id, QString name = QString(""));
 
-struct LightArchetype
-{
-	//0.0 to 1.0, in device space
-	double minX;
-	double minY;
-	double minZ;
+	friend BaseDeviceProviderLock;
+	friend DeviceProviderReadLock;
+	friend DeviceProviderWriteLock;
 
-	double maxX;
-	double maxY;
-	double maxZ;
-
-	LightArchetype(double inMinX, double inMinY, double inMinZ, double inMaxX, double inMaxY, double inMaxZ) :
-		minX(inMinX), minY(inMinY), minZ(inMinZ), maxX(inMaxX), maxY(inMaxY), maxZ(inMaxZ)
-	{
-
-	}
-};
-
-struct DeviceArchetype
-{
-	QString name;
-	std::vector<LightArchetype> Lights;
-	DeviceArchetype(QString inName, std::vector<LightArchetype>& inLights) : name(inName), Lights(inLights) {}
+	QReadWriteLock rwlock;
 };
 
 class DeviceProviderDiscovery : public QObject

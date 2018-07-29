@@ -228,9 +228,10 @@ void BridgeDiscovery::replied(QNetworkReply *reply)
 			newSettings.address = ipAddress;
 
 			auto bridge = std::shared_ptr<DeviceProvider>(new HueBridge(this, newSettings));
-			auto providerId = daemonParent->addDeviceProvider(bridge);
+			bridge->id = id;
+			daemonParent->addDeviceProvider(bridge);
 			bridges.push_back(bridge);
-			emit foundDeviceProvider(daemonParent->getDeviceProvider(providerId));
+			emit foundDeviceProvider(daemonParent->getDeviceProvider(id));
 			return;
 		}
 	}

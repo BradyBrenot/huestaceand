@@ -161,11 +161,11 @@ void HueBridge::replied(QNetworkReply *reply)
 		QJsonObject obj = replyJson.object();
 
 		{
-			auto l = deviceDiscoveryParent->daemonParent->lockDeviceWrite();
+			auto l = lockDeviceWrite();
 
 			for (auto& device : devices)
 			{
-				l.removeDevice(device.second->id);
+				devices.erase(device.second->id);
 			}
 
 			devices.clear();

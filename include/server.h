@@ -20,7 +20,7 @@ class Server : public QThread, public libhuestacean::HuestaceanServer::Service
 
 public:
 
-	Server(class Huestaceand *parent, int inPort = 55589);
+	Server(class Huestaceand *parent, int inPort = 55610);
 	virtual ~Server();
 	void stop();
 	bool isListening();

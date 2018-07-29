@@ -13,11 +13,9 @@ static void doDeleteLater(QObject *obj)
 Huestaceand::Huestaceand(QObject* parent /*= nullptr*/) 
 	: QObject(parent),
 	enable_shared_from_this(),
-	m_server(),
-	nextProviderId(0),
-	nextDeviceId(0)
+	m_server()
 {
-
+	connect(&tickTimer, SIGNAL(timeout()), this, SLOT(tick()));
 }
 
 bool Huestaceand::listen(int port)
@@ -43,6 +41,8 @@ bool Huestaceand::listen(int port)
 	{
 		disco->searchForDeviceProviders();
 	}
+
+	tickTimer.start(20);
 	
 	return true;
 }
@@ -51,7 +51,14 @@ void Huestaceand::stop()
 {
 	m_server->stop();
 	m_server = nullptr;
+	tickTimer.stop();
 	emit stopped();
+}
+
+void Huestaceand::tick()
+{
+	//What... was I going to do... in here... ??????
+	tickTimer.stop();
 }
 
 bool Huestaceand::isListening()
@@ -60,12 +67,11 @@ bool Huestaceand::isListening()
 }
 
 deviceprovider_id Huestaceand::addDeviceProvider(std::shared_ptr<class DeviceProvider> provider) {
-	auto id = nextProviderId++;
 	deviceProvidersLock.lock();
-	m_deviceProviders[id] = provider;
+	m_deviceProviders[provider->id] = provider;
 	deviceProvidersLock.unlock();
 
-	return id;
+	return provider->id;
 }
 
 const std::shared_ptr<DeviceProvider> Huestaceand::getDeviceProvider(deviceprovider_id id) {
@@ -81,118 +87,3 @@ const deviceProviderMap Huestaceand::getDeviceProviders() {
 	QMutexLocker lock(&deviceProvidersLock);
 	return m_deviceProviders;
 }
-
-DeviceProviderReadLock Huestaceand::lockDeviceRead()
-{
-	return DeviceProviderReadLock(shared_from_this());
-}
-DeviceProviderWriteLock Huestaceand::lockDeviceWrite()
-{
-	return DeviceProviderWriteLock(shared_from_this());
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-std::vector<device_id> BaseDeviceProviderLock::keys() {
-	std::vector<device_id> keys;
-	for (const auto& d : m_parent->devices) {
-		keys.push_back(d.first);
-	}
-	return keys;
-}
-
-bool BaseDeviceProviderLock::contains(device_id id)
-{
-	return m_parent->devices.find(id) != m_parent->devices.end();
-}
-
-BaseDeviceProviderLock::BaseDeviceProviderLock(std::shared_ptr<class Huestaceand> provider)
-	: m_parent(provider)
-{
-
-}
-BaseDeviceProviderLock::BaseDeviceProviderLock(BaseDeviceProviderLock&& from) {
-	if (m_parent) {
-		m_parent->rwlock.unlock();
-	}
-
-	m_parent = from.m_parent;
-	from.m_parent = nullptr;
-}
-
-BaseDeviceProviderLock::~BaseDeviceProviderLock() {
-	if (m_parent) {
-		m_parent->rwlock.unlock();
-	}
-}
-
-const Device& BaseDeviceProviderLock::operator[](device_id id)
-{
-	Q_ASSERT(contains(id));
-	return *m_parent->devices[id].get();
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-DeviceProviderReadLock::DeviceProviderReadLock(std::shared_ptr<class Huestaceand> parent)
-	: BaseDeviceProviderLock(parent)
-{
-	m_parent->rwlock.lockForRead();
-}
-
-DeviceProviderReadLock::DeviceProviderReadLock(DeviceProviderReadLock&& from) {
-	if (m_parent) {
-		m_parent->rwlock.unlock();
-	}
-
-	m_parent = from.m_parent;
-	from.m_parent = nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-DeviceProviderWriteLock::DeviceProviderWriteLock(std::shared_ptr<class Huestaceand> parent)
-	: BaseDeviceProviderLock(parent),
-	didDesiredLightColorChange(false)
-{
-	m_parent->rwlock.lockForWrite();
-}
-
-DeviceProviderWriteLock::DeviceProviderWriteLock(DeviceProviderWriteLock&& from) {
-	if (m_parent) {
-		m_parent->rwlock.unlock();
-	}
-
-	m_parent = from.m_parent;
-	didDesiredLightColorChange = from.didDesiredLightColorChange;
-	from.m_parent = nullptr;
-}
-
-DeviceProviderWriteLock::~DeviceProviderWriteLock()
-{
-	if (didDesiredLightColorChange) {
-		emit m_parent->desiredLightColorChanged();
-	}
-}
-
-deviceprovider_id DeviceProviderWriteLock::addDevice(std::shared_ptr<struct Device> device)
-{
-	deviceprovider_id id = m_parent->nextDeviceId++;
-	m_parent->devices[id] = device;
-	return id;
-}
-void DeviceProviderWriteLock::removeDevice(device_id id)
-{
-	m_parent->devices.erase(id);
-}
-
-void DeviceProviderWriteLock::SetDesiredColor(double h, double s, double l, device_id device, light_id light)
-{
-	didDesiredLightColorChange = true;
-	auto& d = *m_parent->devices[device].get();
-	d.lights[light].desired_h = h;
-	d.lights[light].desired_s = s;
-	d.lights[light].desired_l = l;
-}
-
-//////////////////////////////////////////////////////////////////////////
