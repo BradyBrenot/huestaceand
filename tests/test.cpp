@@ -104,7 +104,7 @@ TEST_CASE("can connect to and link a hue bridge", "[.][bridge][interactive]") {
 	{
 		CAPTURE(deviceProvider.first.toUtf8());
 		CAPTURE(deviceProvider.second->getName());
-		CAPTURE(deviceProvider.second->getState());
+
 		if (deviceProvider.second && deviceProvider.second->getState() == DeviceProvider::EDeviceState::PendingLink)
 		{
 			for (int attempts = 0; attempts < 10; ++attempts)
@@ -121,6 +121,25 @@ TEST_CASE("can connect to and link a hue bridge", "[.][bridge][interactive]") {
 		}
 
 		REQUIRE(deviceProvider.second->getState() == DeviceProvider::EDeviceState::Connected);
+		
+		auto hasDevices = [&]()->bool{
+			auto l = deviceProvider.second->lockDeviceRead();
+			return l.keys().size() > 0;
+		};
+
+		if (!hasDevices())
+		{
+			for (int attempts = 0; attempts < 10; ++attempts)
+			{
+				WARN("Waiting for lights to be found. Timeout in: " << (10 - attempts));
+				QTest::qWait(1000);
+				if (hasDevices()) {
+					break;
+				}
+			}
+		}
+
+		REQUIRE(hasDevices());
 	}
 
 	//////////////////////////////////////////////////////////////////////////
