@@ -18,6 +18,7 @@
 
 QString SETTING_USERNAME = "Bridge/Username";
 QString SETTING_CLIENTKEY = "Bridge/clientkey";
+const QString HUE_GROUP_NAME = "huestaceangroup";
 
 HueBridge::HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& SavedSettings, bool bManuallyAdded/* = false*/, bool bReconnect/* = true*/)
 	: DeviceProvider(parent),
@@ -27,13 +28,16 @@ HueBridge::HueBridge(class BridgeDiscovery *parent, HueBridgeSavedSettings& Save
 	clientkey(SavedSettings.clientKey),
 	friendlyName(SavedSettings.friendlyName),
 	manuallyAdded(bManuallyAdded),
-	streamingDevices()
+	streamingDevices(),
+	entertainmentGroupID(),
+	receivedGroupList(false),
+	addingEntertainmentGroup(false)
 {
 	connect(&Utility::getNetworkAccessManagerForThread(), SIGNAL(finished(QNetworkReply*)),
 		this, SLOT(replied(QNetworkReply*)));
 
 	connect(this, SIGNAL(stateChanged(EDeviceState)),
-		this, SLOT(requestGroups()));
+		this, SLOT(handleStateChange()));
 
 	setState(EDeviceState::Disconnected);
 
@@ -92,14 +96,23 @@ void HueBridge::resetConnection()
 	username = QString();
 	clientkey = QString();
 } 
-void HueBridge::requestGroups()
-{
-	return;
 
+void HueBridge::handleStateChange()
+{
+	if (getState() == DeviceProvider::EDeviceState::Connected) {
+		requestGroups();
+	}
+}
+
+void HueBridge::requestLights()
+{
 	QNetworkRequest qnr = makeRequest("/lights");
 	Utility::getNetworkAccessManagerForThread().get(qnr);
+}
 
-	qnr = makeRequest("/groups");
+void HueBridge::requestGroups()
+{
+	QNetworkRequest qnr = makeRequest("/groups");
 	Utility::getNetworkAccessManagerForThread().get(qnr);
 }
 
@@ -133,7 +146,9 @@ void HueBridge::replied(QNetworkReply *reply)
 			qDebug() << "Registered with bridge. Username:" << username << "Clientkey:" << clientkey;
 
 			setState(EDeviceState::Connected);
-		} else
+
+		} 
+		else 
 		{
 			if (obj[QString("error")].toObject()[QString("type")].toInt() == 101)
 			{
@@ -184,6 +199,43 @@ void HueBridge::replied(QNetworkReply *reply)
 		// find the Huestacean group in here
 		// if there is no Huestacean group, create one
 		// once with have the group, we can begin streaming; if we're already running, start streaming, otherwise chill for now
+		receivedGroupList = true;
+
+		QByteArray data = reply->readAll();
+		QJsonDocument replyJson = QJsonDocument::fromJson(data);
+
+		if (addingEntertainmentGroup && replyJson.isArray())
+		{
+			//It's a response to our request to add a group
+			QJsonObject obj = replyJson.array()[0].toObject();
+			if (obj.contains("success"))
+			{
+				QJsonObject success = obj["success"].toObject();
+
+				if (success.contains("id"))
+				{
+					entertainmentGroupID = success["id"].toString();
+					handleFoundEntertainmentGroup();
+				}
+			}			
+		}
+		else
+		{
+			//It's a group list
+			QJsonObject obj = replyJson.object();
+
+			for (auto it = obj.begin(); it != obj.end(); ++it)
+			{
+				if (it.value().toObject()["type"].toString().compare(QString("entertainment"), Qt::CaseInsensitive) == 0
+					&& it.value().toObject()["name"].toString().compare(HUE_GROUP_NAME, Qt::CaseInsensitive) == 0)
+				{
+					entertainmentGroupID = it.key();
+					handleFoundEntertainmentGroup();
+				}
+			}
+
+			addEntertainmentGroupIfNeeded();
+		}
 
 #if 0 //#todo: entertainment group import
 		QByteArray data = reply->readAll();
@@ -227,7 +279,7 @@ void HueBridge::replied(QNetworkReply *reply)
 
 void HueBridge::askBridgeToToggleStreaming(bool enable)
 {
-	QNetworkRequest qnr = makeRequest(QString("/groups/%1").arg(guid));
+	QNetworkRequest qnr = makeRequest(QString("/groups/%1").arg(entertainmentGroupID));
 	qnr.setOriginatingObject(this);
 	qnr.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -269,4 +321,41 @@ void HueBridge::setLowLatencyDevices(std::vector<device_id> devices)
 void HueBridge::doLink()
 {
 	connectToBridge();
+}
+
+void HueBridge::addEntertainmentGroupIfNeeded()
+{
+	if (!receivedGroupList || addingEntertainmentGroup || !entertainmentGroupID.isEmpty()) {
+		return;
+	}
+
+	addingEntertainmentGroup = true;
+
+	/*{
+	"lights": [
+		"1",
+		"2"
+	],
+	"name": "bedroom",
+		"type": "LightGroup"
+	}*/
+
+	QNetworkRequest qnr = makeRequest(QString("/groups"));
+	qnr.setOriginatingObject(this);
+	qnr.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+	QJsonArray lightsArr;
+
+	QJsonObject body;
+	body.insert("lights", lightsArr);
+	body.insert("name", HUE_GROUP_NAME);
+	body.insert("type", "Entertainment");
+	body.insert("class", "Other");
+
+	Utility::getNetworkAccessManagerForThread().post(qnr, QJsonDocument(body).toJson());
+}
+
+void HueBridge::handleFoundEntertainmentGroup()
+{
+	requestLights();
 }

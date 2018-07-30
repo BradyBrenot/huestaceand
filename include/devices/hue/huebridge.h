@@ -66,10 +66,19 @@ public:
 
 private slots:
     void replied(QNetworkReply *reply);
-	void requestGroups();
+	void handleStateChange();
 
 private:
+	void requestLights();
+	void requestGroups();
 
     //path relative to http://address/api
     QNetworkRequest makeRequest(QString path, bool bIncludeUser = true);
+
+	bool receivedGroupList;
+	bool addingEntertainmentGroup;
+	QString entertainmentGroupID;
+
+	void addEntertainmentGroupIfNeeded();
+	void handleFoundEntertainmentGroup();
 };

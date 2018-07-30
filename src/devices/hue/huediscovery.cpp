@@ -131,7 +131,7 @@ void BridgeDiscovery::processPendingDatagrams()
 		ssdpSocket->readDatagram(datagram.data(), datagram.size());
 		if (datagram.contains("IpBridge"))
 		{
-			//Hue docs doth say: If the response contains �IpBridge�, it is considered to be a Hue bridge
+			//Hue docs doth say: If the response contains "IpBridge", it is considered to be a Hue bridge
 			const int start = datagram.indexOf("http://");
 			const int end = datagram.indexOf(":80", start);
 
